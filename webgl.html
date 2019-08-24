@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Image drawing</title>
+        <script type="text/javascript" src="draw.js"></script>
+    </head>
+    <body>
+      <canvas id="canvas"></canvas>
+      <script type="text/javascript">
+        var canvas = document.getElementById('canvas');
+        var tmpCtx = canvas.getContext('2d');
+
+        var thumbImg = new Image(60, 45);   // Размер изображения
+
+        thumbImg.src = 'https://mdn.mozillademos.org/files/5397/rhino.jpg';
+        thumbImg.onload = function() {
+            tmpCtx.save();
+            tmpCtx.beginPath();
+            tmpCtx.arc(25, 25, 25, 0, Math.PI * 2, true);
+            tmpCtx.closePath();
+            tmpCtx.clip();
+
+            tmpCtx.drawImage(thumbImg, 0, 0, 50, 50);
+
+            tmpCtx.beginPath();
+            tmpCtx.arc(0, 0, 25, 0, Math.PI * 2, true);
+            tmpCtx.clip();
+            tmpCtx.closePath();
+            tmpCtx.restore();
+        };
+        </script>
+    </body>
+</html>
