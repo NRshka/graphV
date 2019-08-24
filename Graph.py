@@ -55,11 +55,12 @@ class Graph(AGraph):
     
     self.count_nodes = len(nodes)
     self.edges = []#self.count_nodes*[self.count_nodes*[[]]]
+    '''
     for i in range(self.count_nodes):
       self.edges.append([])
       for _ in range(self.count_nodes):
         self.edges[i].append([])
-    print('New edges:',self.edges)
+    '''
     for node in nodes:
       self.nodes.append(node)
     
@@ -70,6 +71,7 @@ class Graph(AGraph):
     node2: second node
     @return None
     '''
+
     ind1 = 0
     if isinstance(node1, int):
       assert node1 >= 0 and node1 < self.count_nodes, f"Incorrect index of node1: {node1}"
@@ -91,7 +93,7 @@ class Graph(AGraph):
         if node2 == node.title:
           ind2 = ind
           break
-    
+    '''
     if edge is None:
       self.edges[ind1][ind2].append(Edge())
       self.edges[ind2][ind1].append(Edge())
@@ -102,8 +104,8 @@ class Graph(AGraph):
     self.nodes[ind1].numEdges += 1
     self.nodes[ind2].leafs.append(self.nodes[ind1])
     self.nodes[ind2].numEdges += 1
-
-if __name__ == "__main__":
-  g = Graph([Node(None, 0.5, 'title1'), Node(None, 0.2, 'title2')])
-  g.add_edge(0, 'title2')
-  print(g.edges)
+    '''
+    if isinstance(edge, Edge):
+      self.edges.append((ind1, ind2, edge))
+    elif edge is None:
+      self.edges.append((ind1, ind2, Edge()))
