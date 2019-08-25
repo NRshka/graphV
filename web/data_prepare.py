@@ -4,6 +4,34 @@ import io
 from typing import Union
 
 
+def isIntersect(x1, y1, x2, y2, x3, y3, x4, y4):
+  '''
+  Check is sections are intersected
+  @params
+  coordinates
+  @returns
+  bool
+  '''
+  denominator = (y4-y3)*(x1-x2)-(x4-x3)*(y1-y2)
+  if denominator == 0:
+      if (x1*y2-x2*y1)*(x4-x3) - (x3*y4-x4*y3)*(x2-x1) == 0 and
+        (x1*y2-x2*y1)*(y4-y3) - (x3*y4-x4*y3)*(y2-y1) == 0:
+          return True
+        else:
+          return False
+    else:
+        numerator_a = (x4-x2)*(y4-y3)-(x4-x3)*(y4-y2)
+        numerator_b = (x1-x2)*(y4-y2)-(x4-x2)*(y1-y2)
+        Ua = numerator_a / denominator
+        Ub = numerator_b / denominator
+        if Ua >=0 and Ua <=1 and Ub >=0 and Ub <=1:
+          return True
+        else:
+          return False
+    
+    raise ValueError('Unexpected error')
+
+
 def encode_img(img:Union[Image, bytes]) -> str:
   '''
   Encode image to base64 coding
