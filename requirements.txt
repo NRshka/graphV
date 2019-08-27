@@ -1,7 +1,4 @@
 Pillow
 typing
-os
-math
-io
 base64
 
