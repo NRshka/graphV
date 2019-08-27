@@ -30,28 +30,38 @@ def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> 
   #count_leafs_on_next_ring: int = len(set([id(node) for leaf in node.leafs]))
   leafs_set = set()
   for leaf in node.leafs:
-    for l in leaf.leafs:
-      if id(l) != id(node):
-        leafs_set.add(id(l))
+    if leaf.ind != node.ind and not leaf.isVisualized:
+      leafs_set.add(leaf.ind)
+  #for leaf in node.leafs:
+  #  for l in leaf.leafs:
+  #    if l.ind != node.ind and not l.isVisualized:
+  #      leafs_set.add(id(l))
   count_leafs_on_next_ring: int = len(leafs_set)
 
+  old_fargs = dict()
+  d: float = segment / len([l for l in node.leafs if not l.isVisualized])# шаг, с которым ноды будут размещаться в сегменте
   for ind, leaf in enumerate(node.leafs):
     if leaf.isVisualized:
       continue
     
-    d: float = segment / len(node.leafs)# шаг, с которым ноды будут размещаться в сегменте
     farg: float = vector - segment/2 + ind*d
+    old_fargs[leaf.ind] = farg
     coord: tuple = (center[0] + int(radius * cos(farg)), center[1] + int(radius*sin(farg)))#центр новой ноды
     coords.append((leaf.ind, coord))
     leaf.isVisualized = True
 
   for leaf in node.leafs:
+    #d: float = segment / len(node.leafs)# шаг, с которым ноды будут размещаться в сегменте
+    #farg: float = vector - segment/2 + ind*d
+    #coord: tuple = (center[0] + int(radius * cos(farg)), center[1] + int(radius*sin(farg)))#центр новой ноды
+    #coords.append((leaf.ind, coord))
+    
     for nind, new_node in enumerate(leaf.leafs):
       if new_node.isVisualized:
         continue
         
-      new_segment: float = 2*pi*len(new_node.leafs) / count_leafs_on_next_ring
-      new_vector: float = farg
+      new_segment: float = 2*pi*len(new_node.leafs) / count_leafs_on_next_ring - (pi/5)
+      new_vector: float = old_fargs[leaf.ind]# + pi
       nd: float = new_segment / len(new_node.leafs)# шаг, с которым ноды будут размещаться в сегменте
       new_farg = new_vector - new_segment/2 + nind*nd
       new_center = (coord[0] + int(radius*cos(new_farg)), coord[1] + int(radius*sin(new_farg)))
@@ -105,7 +115,7 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
       for key in edges:
         e = edges[key]
         for ind2, link in enumerate(e):
-          for ind3 in range(len(link)):
+          for _ in range(len(link)):
             #why third cycle? for loops over one node
             # I'll do it with arc algo
             img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineTo(%d, %d);\n \

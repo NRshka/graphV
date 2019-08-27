@@ -4,7 +4,6 @@ from collections.abc import Iterable
 
 from PIL import Image
 
-from web import web_gen
 
 
 
@@ -59,6 +58,8 @@ class Graph(AGraph):
     
     self.count_nodes = len(nodes)
     self.edges = {}#self.count_nodes*[self.count_nodes*[[]]]
+    for i in range(self.count_nodes):
+      self.edges[i] = [[] for j in range(self.count_nodes)]
     '''
     for i in range(self.count_nodes):
       self.edges.append([])
@@ -98,24 +99,24 @@ class Graph(AGraph):
         if node2 == node.title:
           ind2 = ind
           break
-    '''
-    if edge is None:
-      self.edges[ind1][ind2].append(Edge())
-      self.edges[ind2][ind1].append(Edge())
-    else:
-      self.edges[ind1][ind2].append(edge)
-      self.edges[ind2][ind1].append(edge)
+
     self.nodes[ind1].leafs.append(self.nodes[ind2])
-    self.nodes[ind1].numEdges += 1
+    self.nodes[ind1].leafs = list(set(self.nodes[ind1].leafs))
     self.nodes[ind2].leafs.append(self.nodes[ind1])
-    self.nodes[ind2].numEdges += 1
-    '''
-    self.nodes[ind1].leafs.append(self.nodes[ind2])
-    self.nodes[ind2].leafs.append(self.nodes[ind1])
+    self.nodes[ind2].leafs = list(set(self.nodes[ind2].leafs))
     if isinstance(edge, Edge):
       #self.edges.append((ind1, ind2, edge))
-      self.edges[ind1] = [[] for i in range(self.count_nodes)]
+      #self.edges[ind1] = [[] for i in range(self.count_nodes)]
       self.edges[ind1][ind2].append(edge)
+      self.edges[ind2][ind1].append(edge)
     elif edge is None:
-      self.edges[ind1] = [[] for i in range(self.count_nodes)]
+      #self.edges[ind1] = [[] for i in range(self.count_nodes)]
       self.edges[ind1][ind2].append(Edge())
+      self.edges[ind2][ind1].append(Edge())
+  
+  def save(self, file_name):
+    with open(file_name, 'w') as file:
+      for node in self.nodes:
+        file.write(str(node.ind) + ': ')
+        file.write(' '.join([str(leaf.ind) for leaf in node.leafs]))
+        file.write('\n')
