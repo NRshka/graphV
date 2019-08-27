@@ -115,12 +115,14 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
       for key in edges:
         e = edges[key]
         for ind2, link in enumerate(e):
-          for _ in range(len(link)):
+          for bone in link:
             #why third cycle? for loops over one node
             # I'll do it with arc algo
-            img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineTo(%d, %d);\n \
+            img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineWidth = %d;\n \
+              tmpCtx.strokeStyle = "%s"\ntmpCtx.lineTo(%d, %d);\n \
               tmpCtx.stroke();\n'  % (coords[key][0], coords[key][1],
-                                  coords[ind2][0], coords[ind2][1])
+                                    bone.thickness, bone.color,
+                                    coords[ind2][0], coords[ind2][1])
     
     img_onload += '};\n'
 

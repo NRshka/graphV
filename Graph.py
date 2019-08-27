@@ -34,9 +34,10 @@ class Node:
 
 class Edge:
 
-  def __init__(self, length:Union[float, int, None]=None, thickess:Union[float, int, None]=None,
+  def __init__(self, length:Union[float, int, None]=None, thickness:Union[int, None]=None,
               color:Union[int, str, None]=None, title:Union[str, None]=None):
-    pass
+    self.thickness = thickness if thickness else 1
+    self.color = color if color else "#000000"#MAKE CHECK IS IT HEX CODE
 
 
 class AGraph:
