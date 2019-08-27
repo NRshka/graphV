@@ -22,10 +22,9 @@ if __name__ == "__main__":
   g.add_edge(2, 0)
   g.add_edge(3, 0)
   for i in range(1000):
-    for j in range(rand.randint(0, 2*count_nodes))
-      a = rand.randint(0, count_nodes)
-      b = rand.randint(0, count_nodes)
+    for j in range(rand.randint(0, 2*count_nodes)):
+      a = rand.randint(0, count_nodes - 1)
+      b = rand.randint(0, count_nodes - 1)
       g.add_edge(a, b)
   
-  print(g.edges)
   web_gen.get_page(g)

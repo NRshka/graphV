@@ -20,7 +20,6 @@ def get_queue1(nodes: list, canvas_size: tuple) -> list:
 
 
 def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> List[tuple]:
-  print(node.ind)
   if node.isVisualized:
     return []
   
@@ -39,7 +38,7 @@ def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> 
   for ind, leaf in enumerate(node.leafs):
     if leaf.isVisualized:
       continue
-    print(leaf.ind)
+    
     d: float = segment / len(node.leafs)# шаг, с которым ноды будут размещаться в сегменте
     farg: float = vector - segment/2 + ind*d
     coord: tuple = (center[0] + int(radius * cos(farg)), center[1] + int(radius*sin(farg)))#центр новой ноды
@@ -105,9 +104,10 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
       pass
       for key in edges:
         e = edges[key]
-        print('e:', e)
         for ind2, link in enumerate(e):
           for ind3 in range(len(link)):
+            #why third cycle? for loops over one node
+            # I'll do it with arc algo
             img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineTo(%d, %d);\n \
               tmpCtx.stroke();\n'  % (coords[key][0], coords[key][1],
                                   coords[ind2][0], coords[ind2][1])
