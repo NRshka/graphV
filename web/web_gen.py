@@ -1,11 +1,11 @@
 from typing import List
 from math import cos, sin, pi
 import os
-from web.data_prepare import encode_img
+from .data_prepare import encode_img, sort3d, merge_dicts, tupled_dict_to_list
 
 
 
-def get_queue(nodes: list, canvas_size: tuple) -> list:
+def get_queue1(nodes: list, canvas_size: tuple) -> list:
   coords = []
   center = (canvas_size[0] / 2, canvas_size[1] / 2)
   radius = min(canvas_size) / 2 - max([node.size for node in nodes])
@@ -17,6 +17,53 @@ def get_queue(nodes: list, canvas_size: tuple) -> list:
   
   return coords
 
+
+
+def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> List[tuple]:
+  print(node.ind)
+  if node.isVisualized:
+    return []
+  
+  coords: List[tuple] = [(node.ind, center)]
+  node.isVisualized = True
+  radius: int = 100#СДЕЛАТЬ РАССЧИТЫВАЕМЫМ ПАРАМЕТРОМ НА ОСНОВЕ КОЛ-ВА ЛИСТЬЕВ, ЧТОБЫ НЕ СЛИВАТЬ ВСЁ В КУЧУ
+  
+  #count_leafs_on_next_ring: int = len(set([id(node) for leaf in node.leafs]))
+  leafs_set = set()
+  for leaf in node.leafs:
+    for l in leaf.leafs:
+      if id(l) != id(node):
+        leafs_set.add(id(l))
+  count_leafs_on_next_ring: int = len(leafs_set)
+
+  for ind, leaf in enumerate(node.leafs):
+    if leaf.isVisualized:
+      continue
+    print(leaf.ind)
+    d: float = segment / len(node.leafs)# шаг, с которым ноды будут размещаться в сегменте
+    farg: float = vector - segment/2 + ind*d
+    coord: tuple = (center[0] + int(radius * cos(farg)), center[1] + int(radius*sin(farg)))#центр новой ноды
+    coords.append((leaf.ind, coord))
+    leaf.isVisualized = True
+
+  for leaf in node.leafs:
+    for nind, new_node in enumerate(leaf.leafs):
+      if new_node.isVisualized:
+        continue
+        
+      new_segment: float = 2*pi*len(new_node.leafs) / count_leafs_on_next_ring
+      new_vector: float = farg
+      nd: float = new_segment / len(new_node.leafs)# шаг, с которым ноды будут размещаться в сегменте
+      new_farg = new_vector - new_segment/2 + nind*nd
+      new_center = (coord[0] + int(radius*cos(new_farg)), coord[1] + int(radius*sin(new_farg)))
+      coords += get_queue(new_node, new_center, new_vector, new_segment)#рекурентно пополняем список
+
+  return coords
+
+def get_coords(graph, canvas_size: tuple) -> List[tuple]:
+  center = tuple(int(c / 2) for c in canvas_size)
+  sorted_edges = sort3d(graph.edges)
+  return get_queue(graph.nodes[sorted_edges[0]], center)
 
 def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) -> str:
   '''
@@ -55,14 +102,20 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
         ' % (ind, coord[0], coord[1], ind, coord[0] - 25, coord[1] - 25,
             pack[1].title, coord[0] - 25, coord[1] + 25 + 14)
     if ind == len(nodes) - 1:
-      for e in edges:
-        img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineTo(%d, %d);\n \
-          tmpCtx.stroke();\n'  % (coords[e[0]][0], coords[e[0]][1], coords[e[1]][0], coords[e[1]][1])
+      pass
+      for key in edges:
+        e = edges[key]
+        print('e:', e)
+        for ind2, link in enumerate(e):
+          for ind3 in range(len(link)):
+            img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineTo(%d, %d);\n \
+              tmpCtx.stroke();\n'  % (coords[key][0], coords[key][1],
+                                  coords[ind2][0], coords[ind2][1])
     
     img_onload += '};\n'
 
   head = '<!DOCTYPE html>\n<html>\n<head>\n<title>Image drawing</title>\n \
-        </head>\n<body>\n<canvas id="canvas" width=500 height=500></canvas>\n<script type="text/javascript">\n \
+        </head>\n<body>\n<canvas id="canvas" width=1000 height=1000></canvas>\n<script type="text/javascript">\n \
         var canvas = document.getElementById("canvas");\n \
         var tmpCtx = canvas.getContext("2d");\n'
   end = '</script></body></html>'
@@ -77,6 +130,7 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
 
 def get_page(graph):
   imgz = [encode_img(node.img) for node in graph.nodes]
-  coords = get_queue(graph.nodes, (500, 500))
+  coords = get_coords(graph, (1000, 1000))
+  coords = tupled_dict_to_list(coords)
   
   return make_page(imgz, graph.nodes, coords, graph.edges)

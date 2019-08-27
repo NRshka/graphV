@@ -14,6 +14,7 @@ class Node:
   title: str
   isVisualized: bool
   numEdges: int
+  ind: int
 
   def __init__(self, img=None, size:Union[float, int, None]=None, title:Union[str, None]=None):
     self.img = img
@@ -26,10 +27,13 @@ class Node:
       self.title = title
     else:
       self.title = ''
+  
+  def set_ind(self, ind: int):
+    self.ind = ind
+
 
 
 class Edge:
-
 
   def __init__(self, length:Union[float, int, None]=None, thickess:Union[float, int, None]=None,
               color:Union[int, str, None]=None, title:Union[str, None]=None):
@@ -51,17 +55,18 @@ class Graph(AGraph):
     if nodes is None:
       self.edges = []
       return
-    assert isinstance(nodes, Iterable), "Nodes list mst be iterable"
+    assert isinstance(nodes, Iterable), "Nodes list must be iterable"
     
     self.count_nodes = len(nodes)
-    self.edges = []#self.count_nodes*[self.count_nodes*[[]]]
+    self.edges = {}#self.count_nodes*[self.count_nodes*[[]]]
     '''
     for i in range(self.count_nodes):
       self.edges.append([])
       for _ in range(self.count_nodes):
         self.edges[i].append([])
     '''
-    for node in nodes:
+    for ind, node in enumerate(nodes):
+      node.ind = ind
       self.nodes.append(node)
     
   def add_edge(self, node1:Union[int, str], node2:Union[int, str], edge:Optional[Edge]=None):
@@ -105,7 +110,12 @@ class Graph(AGraph):
     self.nodes[ind2].leafs.append(self.nodes[ind1])
     self.nodes[ind2].numEdges += 1
     '''
+    self.nodes[ind1].leafs.append(self.nodes[ind2])
+    self.nodes[ind2].leafs.append(self.nodes[ind1])
     if isinstance(edge, Edge):
-      self.edges.append((ind1, ind2, edge))
+      #self.edges.append((ind1, ind2, edge))
+      self.edges[ind1] = [[] for i in range(self.count_nodes)]
+      self.edges[ind1][ind2].append(edge)
     elif edge is None:
-      self.edges.append((ind1, ind2, Edge()))
+      self.edges[ind1] = [[] for i in range(self.count_nodes)]
+      self.edges[ind1][ind2].append(Edge())
