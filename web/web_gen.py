@@ -103,6 +103,18 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
 
   img_inits = ""
   img_onload = ""
+  for key in edges:
+    e = edges[key]
+    for ind2, link in enumerate(e):
+      for bone in link:
+        #why third cycle? for loops over one node
+        # I'll do it with arc algo
+        img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineWidth = %d;\n \
+          tmpCtx.strokeStyle = "%s"\ntmpCtx.lineTo(%d, %d);\n \
+          tmpCtx.stroke();\n'  % (coords[key][0], coords[key][1],
+                                bone.thickness, bone.color,
+                                coords[ind2][0], coords[ind2][1])
+  
   for ind, pack in enumerate(zip(img_base64, nodes, coords)):
     src = pack[0]
     size = (pack[1].size, pack[1].size)
@@ -125,17 +137,6 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
             pack[1].title, coord[0] - 25, coord[1] + 25 + 14)
     if ind == len(nodes) - 1:
       pass
-      for key in edges:
-        e = edges[key]
-        for ind2, link in enumerate(e):
-          for bone in link:
-            #why third cycle? for loops over one node
-            # I'll do it with arc algo
-            img_onload += 'tmpCtx.moveTo(%d,%d);\ntmpCtx.lineWidth = %d;\n \
-              tmpCtx.strokeStyle = "%s"\ntmpCtx.lineTo(%d, %d);\n \
-              tmpCtx.stroke();\n'  % (coords[key][0], coords[key][1],
-                                    bone.thickness, bone.color,
-                                    coords[ind2][0], coords[ind2][1])
     
     img_onload += '};\n'
 
