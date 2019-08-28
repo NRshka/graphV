@@ -1,3 +1,4 @@
 Pillow
 typing
 dataclasses
+pytest

@@ -19,13 +19,13 @@ def get_queue1(nodes: list, canvas_size: tuple) -> list:
 
 
 
-def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> List[tuple]:
+def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi, radius: int = 200) -> List[tuple]:
   if node.isVisualized:
     return []
   
   coords: List[tuple] = [(node.ind, center)]
   node.isVisualized = True
-  radius: int = 100#СДЕЛАТЬ РАССЧИТЫВАЕМЫМ ПАРАМЕТРОМ НА ОСНОВЕ КОЛ-ВА ЛИСТЬЕВ, ЧТОБЫ НЕ СЛИВАТЬ ВСЁ В КУЧУ
+  #radius: int = 100#СДЕЛАТЬ РАССЧИТЫВАЕМЫМ ПАРАМЕТРОМ НА ОСНОВЕ КОЛ-ВА ЛИСТЬЕВ, ЧТОБЫ НЕ СЛИВАТЬ ВСЁ В КУЧУ
   
   #count_leafs_on_next_ring: int = len(set([id(node) for leaf in node.leafs]))
   leafs_set = set()
@@ -61,11 +61,14 @@ def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi) -> 
         continue
         
       new_segment: float = 2*pi*len(new_node.leafs) / count_leafs_on_next_ring - (pi/5)
-      new_vector: float = old_fargs[leaf.ind]# + pi
+      new_vector: float = old_fargs[leaf.ind] + pi
+      if len(new_node.leafs) % 2:
+        new_vector += pi / 2
       nd: float = new_segment / len(new_node.leafs)# шаг, с которым ноды будут размещаться в сегменте
       new_farg = new_vector - new_segment/2 + nind*nd
       new_center = (coord[0] + int(radius*cos(new_farg)), coord[1] + int(radius*sin(new_farg)))
-      coords += get_queue(new_node, new_center, new_vector, new_segment)#рекурентно пополняем список
+      radius = radius if radius % 2 else int(radius / 2)
+      coords += get_queue(new_node, new_center, new_vector, new_segment, radius)#рекурентно пополняем список
 
   return coords
 
