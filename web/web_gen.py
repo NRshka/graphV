@@ -19,7 +19,7 @@ def get_queue1(nodes: list, canvas_size: tuple) -> list:
 
 
 
-def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi, radius: int = 200) -> List[tuple]:
+def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi, radius: int = 150) -> List[tuple]:
   if node.isVisualized:
     return []
   
@@ -62,9 +62,18 @@ def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi, rad
         
       new_segment: float = 2*pi*len(new_node.leafs) / count_leafs_on_next_ring - (pi/5)
       new_vector: float = old_fargs[leaf.ind] + pi
-      if len(new_node.leafs) % 2:
-        new_vector += pi / 2
-      nd: float = new_segment / len(new_node.leafs)# шаг, с которым ноды будут размещаться в сегменте
+            
+      leafs_set = set()
+      for l in new_node.leafs:
+        if new_node.ind != l.ind and not l.isVisualized:
+          leafs_set.add(new_node.ind)
+      
+      if len(leafs_set) % 2:
+        #new_vector += pi# / 12
+        #new_segment -= pi / 8
+        pass
+      
+      nd: float = new_segment / len(leafs_set)# шаг, с которым ноды будут размещаться в сегменте
       new_farg = new_vector - new_segment/2 + nind*nd
       new_center = (coord[0] + int(radius*cos(new_farg)), coord[1] + int(radius*sin(new_farg)))
       radius = radius if radius % 2 else int(radius / 2)
@@ -75,6 +84,7 @@ def get_queue(node, center: tuple, vector: float = 0, segment: float = 2*pi, rad
 def get_coords(graph, canvas_size: tuple) -> List[tuple]:
   center = tuple(int(c / 2) for c in canvas_size)
   sorted_edges = sort3d(graph.edges)
+  
   return get_queue(graph.nodes[sorted_edges[0]], center)
 
 def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) -> str:
@@ -146,6 +156,7 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
 def get_page(graph):
   imgz = [encode_img(node.img) for node in graph.nodes]
   coords = get_coords(graph, (1000, 1000))
+  
   coords = tupled_dict_to_list(coords)
   
   return make_page(imgz, graph.nodes, coords, graph.edges)
