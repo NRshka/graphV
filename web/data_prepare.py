@@ -4,6 +4,43 @@ import io
 from typing import Union, List
 
 
+
+
+
+def generate_unique_colors(count: int) -> List[str]:
+  '''
+  Make list of contrast colors in HTML codes
+  @params
+  count: int - count of unique elements
+  @returns
+  list of color codes ['#f305ac', ...]
+  '''
+  two_step: int = (count + 1) // 3
+  third_step: int = two_step + count % 3
+  res = []
+
+  for i in range(1, two_step + 1):
+    h = hex(int(i*16/two_step))[2:]
+    if len(h) == 1:
+      h = '0' + h
+    color = '#' + h + '0000'
+    res.append(color)
+  for i in range(1, two_step + 1):
+    h = hex(int(i*16/two_step))[2:]
+    if len(h) == 1:
+      h = '0' + h
+    color = '#00' + h + '00'
+    res.append(color)
+  for i in range(1, third_step + 1):
+    h = hex(int(i*16/third_step))[2:]
+    if len(h) == 1:
+      h = '0' + h
+    color = '#0000' + h
+    res.append(color)
+
+  return res
+
+
 def isIntersect(x1, y1, x2, y2, x3, y3, x4, y4):
   '''
   Check is sections are intersected

@@ -1,30 +1,29 @@
-from Graph import Graph, Node
+from Graph import Graph, Node, Edge
 from web import web_gen
 from PIL import Image
+from web.data_prepare import generate_unique_colors
 
-import random as rand
+import sys
 
 
 
 
 
 if __name__ == "__main__":
-  count_nodes = 10
+  count_nodes = 7
   flower_img = Image.open('flower.jpg')
   # g = Graph([Node(flower_img, 50, 'title1'), Node(flower_img, 20, 'title2'),
   #           Node(flower_img, 10, 'title3'), Node(flower_img, 90, 'title4'),
   #           Node(flower_img, 10, 'title5'), Node(flower_img, 10, 'title6'),
   #           Node(flower_img, 10, 'title7'), Node(flower_img, 10, 'title8'),
   #           Node(flower_img, 10, 'title9'), Node(flower_img, 10, 'title10')])
-  g = Graph([Node(flower_img, 10, 'title' + str(i + 1)) for i in range(count_nodes)])
-  g.add_edge(0, 'title2')
-  g.add_edge(1, 2)
-  g.add_edge(2, 0)
-  g.add_edge(3, 0)
-  for i in range(1000):
-    for j in range(rand.randint(0, 2*count_nodes)):
-      a = rand.randint(0, count_nodes - 1)
-      b = rand.randint(0, count_nodes - 1)
-      g.add_edge(a, b)
-  
+  g = Graph([Node(flower_img, 10, 'title' + str(i)) for i in range(count_nodes-1)] + [Node(size=30, group=0)])
+
+  g.add_edge(0, 2)
+  g.add_edge(2, 1)
+  g.add_edge(0, 3)
+  g.add_edge(0, 4)
+  g.add_edge(1, 5, Edge(thickness=3))
+  g.add_edge(1, 6, Edge(color="ff0000"))
+
   web_gen.get_page(g)

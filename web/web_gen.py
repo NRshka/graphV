@@ -2,7 +2,7 @@ from typing import List
 from math import cos, sin, pi
 import os
 from .data_prepare import encode_img, sort3d, merge_dicts, tupled_dict_to_list
-
+from .data_prepare import generate_unique_colors
 
 
 def get_queue1(nodes: list, canvas_size: tuple) -> list:
@@ -101,8 +101,9 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
   assert len(img_base64) == len(nodes), 'Lengts of first arg and second are not same.'
   f'{len(img_base64)} != {len(nodes)}'
 
-  img_inits = ""
-  img_onload = ""
+  img_inits = ""#var smth%d = new Image()
+  img_onload = ""#скрипт отрисовки подгруженных Изображений(!)
+  end = ''#конец скрипта (здесь нарисуем цветные ноды), потом дабавим сюда закрывающие тэги
   for key in edges:
     e = edges[key]
     for ind2, link in enumerate(e):
@@ -120,31 +121,36 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
     size = (pack[1].size, pack[1].size)
     coord = pack[2]
 
-    img_inits += f'var img{ind} = new Image({size[0]},{size[1]});\n'
-    img_inits += f'img{ind}.src = "data:image/jpeg;base64,{src}";\n'
-    
-    img_onload += 'img%d.onload = function() {\n \
-            tmpCtx.save();\n \
-            tmpCtx.beginPath();\n \
-            tmpCtx.arc(%d, %d, 25, 0, Math.PI * 2, true);\n \
-            tmpCtx.closePath();\n \
-            tmpCtx.clip();\n \
-            tmpCtx.drawImage(img%s, %d, %d, 50, 50);\n \
-            tmpCtx.restore();\n \
-            tmpCtx.font = "14px Arial"\n \
-            tmpCtx.fillText("%s", %d, %d);\n \
-        ' % (ind, coord[0], coord[1], ind, coord[0] - 25, coord[1] - 25,
-            pack[1].title, coord[0] - 25, coord[1] + 25 + 14)
-    if ind == len(nodes) - 1:
-      pass
-    
-    img_onload += '};\n'
+    #Если у ноды есть картинка - подгружаем, иначе будем рисовать цветной круг
+    #но только после отрисовки всез рёбер, чтобы нарисовать поверх (см. end)
+    if pack[1].img:
+      img_inits += f'var img{ind} = new Image({size[0]},{size[1]});\n'
+      img_inits += f'img{ind}.src = "data:image/jpeg;base64,{src}";\n'
+      img_onload += 'img%d.onload = function() {\n \
+              tmpCtx.save();\n \
+              tmpCtx.beginPath();\n \
+              tmpCtx.arc(%d, %d, 25, 0, Math.PI * 2, true);\n \
+              tmpCtx.closePath();\n \
+              tmpCtx.clip();\n \
+              tmpCtx.drawImage(img%s, %d, %d, 50, 50);\n \
+              tmpCtx.restore();\n \
+              tmpCtx.font = "14px Arial";\n \
+              tmpCtx.fillText("%s", %d, %d);\n \
+          ' % (ind, coord[0], coord[1], ind, coord[0] - 25, coord[1] - 25,
+              pack[1].title, coord[0] - 25, coord[1] + 25 + 14)
+      img_onload += '};\n'
+    else:
+      end += 'tmpCtx.beginPath();\ntmpCtx.arc(%d, %d, %d, 0, 2*Math.PI, true);\n \
+              tmpCtx.fillStyle = "%s";\ntmpCtx.fill();\n \
+              tmpCtx.font = "14px Arial";\n \
+              tmpCtx.fillText("%s", %d, %d)\n' % (coord[0], coord[1], pack[1].size, src,
+                                                  pack[1].title, coord[0], coord[1])
 
   head = '<!DOCTYPE html>\n<html>\n<head>\n<title>Image drawing</title>\n \
         </head>\n<body>\n<canvas id="canvas" width=1000 height=1000></canvas>\n<script type="text/javascript">\n \
         var canvas = document.getElementById("canvas");\n \
         var tmpCtx = canvas.getContext("2d");\n'
-  end = '</script></body></html>'
+  end += '</script></body></html>'
   
   with open(os.path.join('web.html'), 'w', encoding='utf-8') as file:
     file.write(head)
@@ -155,9 +161,19 @@ def make_page(img_base64: List[str], nodes: list, coords: List[tuple], edges) ->
 
 
 def get_page(graph):
-  imgz = [encode_img(node.img) for node in graph.nodes]
+  #imgz = [encode_img(node.img) for node in graph.nodes]
+  imgz = []
+  unique_groups = list(set([node.group for node in graph.nodes]))
+  colors = generate_unique_colors(len(unique_groups))
+  colors.append('#000000')
+  colors = {unique_groups[i]: colors[i] for i in range(len(unique_groups))}
+  for node in graph.nodes:
+    if node.img:
+      imgz.append(encode_img(node.img))
+    else:
+      imgz.append(colors[node.group])
+
   coords = get_coords(graph, (1000, 1000))
-  
   coords = tupled_dict_to_list(coords)
   
   return make_page(imgz, graph.nodes, coords, graph.edges)

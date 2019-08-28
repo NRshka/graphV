@@ -14,13 +14,19 @@ class Node:
   isVisualized: bool
   numEdges: int
   ind: int
+  group: int
 
-  def __init__(self, img=None, size:Union[float, int, None]=None, title:Union[str, None]=None):
+  def __init__(self, img=None, size:Union[float, int, None]=None,
+              title:Union[str, None]=None, group: Optional[int]=None):
     self.img = img
     self.size = size
     self.leafs = []
     self.isVisualized = False
     self.numEdges = 0
+    self.group = group if not group is None else -1
+
+    if group:
+      assert group >= 0, ValueError("Group id %d must be positive." % (group))
 
     if title != None:
       self.title = title
